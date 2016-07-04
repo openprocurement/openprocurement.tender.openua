@@ -1103,7 +1103,7 @@ class TenderBidDocumentWithDSResourceTest(TenderBidDocumentResourceTest):
             {'data': {
                 'title': 'name.doc',
                 'url': self.generate_docservice_url(),
-                'md5': '0' * 32,
+                'hash': '0' * 32,
                 'format': 'application/msword',
             }})
         self.assertEqual(response.status, '201 Created')
@@ -1170,7 +1170,7 @@ class TenderBidDocumentWithDSResourceTest(TenderBidDocumentResourceTest):
             {'data': {
                 'title': 'name.doc',
                 'url': self.generate_docservice_url(),
-                'md5': '0' * 32,
+                'hash': '0' * 32,
                 'format': 'application/msword',
             }})
         self.assertEqual(response.status, '201 Created')
@@ -1184,7 +1184,7 @@ class TenderBidDocumentWithDSResourceTest(TenderBidDocumentResourceTest):
             {'data': {
                 'title': 'name.doc',
                 'url': self.generate_docservice_url(),
-                'md5': '0' * 32,
+                'hash': '0' * 32,
                 'format': 'application/msword',
             }}, status=403)
         self.assertEqual(response.status, '403 Forbidden')
@@ -1210,7 +1210,7 @@ class TenderBidDocumentWithDSResourceTest(TenderBidDocumentResourceTest):
             {'data': {
                 'title': 'name.doc',
                 'url': self.generate_docservice_url(),
-                'md5': '0' * 32,
+                'hash': '0' * 32,
                 'format': 'application/msword',
             }})
         self.assertEqual(response.status, '201 Created')
@@ -1222,7 +1222,7 @@ class TenderBidDocumentWithDSResourceTest(TenderBidDocumentResourceTest):
             {'data': {
                 'title': 'name.doc',
                 'url': self.generate_docservice_url(),
-                'md5': '0' * 32,
+                'hash': '0' * 32,
                 'format': 'application/msword',
             }})
         self.assertEqual(response.status, '200 OK')
@@ -1249,7 +1249,7 @@ class TenderBidDocumentWithDSResourceTest(TenderBidDocumentResourceTest):
             {'data': {
                 'title': 'name.doc',
                 'url': self.generate_docservice_url(),
-                'md5': '0' * 32,
+                'hash': '0' * 32,
                 'format': 'application/msword',
             }})
         self.assertEqual(response.status, '200 OK')
@@ -1271,7 +1271,7 @@ class TenderBidDocumentWithDSResourceTest(TenderBidDocumentResourceTest):
             {'data': {
                 'title': 'name.doc',
                 'url': self.generate_docservice_url(),
-                'md5': '0' * 32,
+                'hash': '0' * 32,
                 'format': 'application/msword',
             }}, status=403)
         self.assertEqual(response.status, '403 Forbidden')
