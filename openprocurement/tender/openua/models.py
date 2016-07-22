@@ -28,8 +28,7 @@ from openprocurement.api.models import (
     TZ, get_now, schematics_embedded_role, validate_lots_uniq, draft_role,
     embedded_lot_role, default_lot_role, calc_auction_end_time, get_tender,
     ComplaintModelType, validate_cpv_group, validate_items_uniq, Model,
-    rounding_shouldStartAfter,
-    PeriodEndRequired as BasePeriodEndRequired,
+    rounding_shouldStartAfter, PeriodEndRequired as BasePeriodEndRequired,
 )
 from openprocurement.api.models import ITender
 from openprocurement.tender.openua.utils import (
