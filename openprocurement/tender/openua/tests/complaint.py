@@ -122,6 +122,7 @@ class TenderComplaintResourceTest(BaseTenderUAContentWebTest):
         self.assertEqual(complaint['author']['name'], test_organization['name'])
         self.assertIn('id', complaint)
         self.assertIn(complaint['id'], response.headers['Location'])
+        self.assertNotIn('transfer', complaint)
 
         response = self.app.patch_json('/tenders/{}/complaints/{}?acc_token={}'.format(self.tender_id, complaint['id'], self.tender_token), {"data": {
             "status": "answered"
@@ -346,6 +347,8 @@ class TenderComplaintResourceTest(BaseTenderUAContentWebTest):
         self.assertEqual(response.status, '200 OK')
         self.assertEqual(response.content_type, 'application/json')
         self.assertEqual(response.json['data'], complaint)
+        self.assertNotIn('transfer', response.json.get('access', ''))
+        self.assertNotIn('transfer', response.json['data'])
 
         response = self.app.get('/tenders/{}/complaints/some_id'.format(self.tender_id), status=404)
         self.assertEqual(response.status, '404 Not Found')
