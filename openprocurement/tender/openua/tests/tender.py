@@ -621,6 +621,7 @@ class TenderUAResourceTest(BaseTenderUAWebTest):
             u'awardCriteria', u'submissionMethod', u'next_check', u'owner', u'date',
         ]))
         self.assertIn(tender['id'], response.headers['Location'])
+        self.assertNotIn('transfer', tender)
 
         response = self.app.get('/tenders/{}'.format(tender['id']))
         self.assertEqual(response.status, '200 OK')
@@ -666,6 +667,8 @@ class TenderUAResourceTest(BaseTenderUAWebTest):
         self.assertEqual(response.status, '200 OK')
         self.assertEqual(response.content_type, 'application/json')
         self.assertEqual(response.json['data'], tender)
+        self.assertNotIn('transfer', response.json.get('access', ''))
+        self.assertNotIn('transfer', response.json['data'])
 
         response = self.app.get('/tenders/{}?opt_jsonp=callback'.format(tender['id']))
         self.assertEqual(response.status, '200 OK')
