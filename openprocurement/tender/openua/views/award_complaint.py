@@ -5,6 +5,7 @@ from openprocurement.api.utils import (
     apply_patch,
     check_tender_status,
     context_unpack,
+    generate_id,
     json_view,
     opresource,
     save_tender,
@@ -54,6 +55,8 @@ class TenderUaAwardComplaintResource(TenderAwardComplaintResource):
         else:
             complaint.status = 'draft'
         complaint.complaintID = '{}.{}{}'.format(tender.tenderID, self.server_id, self.complaints_len(tender) + 1)
+        transfer = generate_id()
+        complaint.transfer_token = transfer
         set_ownership(complaint, self.request)
         self.context.complaints.append(complaint)
         if save_tender(self.request):
@@ -64,7 +67,8 @@ class TenderUaAwardComplaintResource(TenderAwardComplaintResource):
             return {
                 'data': complaint.serialize("view"),
                 'access': {
-                    'token': complaint.owner_token
+                    'token': complaint.owner_token,
+                    'transfer': transfer
                 }
             }
 
