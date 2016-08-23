@@ -4,6 +4,7 @@ from openprocurement.api.models import get_now
 from openprocurement.api.utils import (
     save_tender,
     set_ownership,
+    generate_id,
     apply_patch,
     opresource,
     json_view,
@@ -123,6 +124,8 @@ class TenderUABidResource(TenderBidResource):
             self.request.errors.status = 403
             return
         tender.modified = False
+        transfer = generate_id()
+        bid.transfer_token = transfer
         set_ownership(bid, self.request)
         tender.bids.append(bid)
         if save_tender(self.request):
@@ -133,7 +136,8 @@ class TenderUABidResource(TenderBidResource):
             return {
                 'data': bid.serialize('view'),
                 'access': {
-                    'token': bid.owner_token
+                    'token': bid.owner_token,
+                    'transfer': transfer
                 }
             }
 
