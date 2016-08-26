@@ -124,18 +124,13 @@ class TenderUABidResource(TenderBidResource):
             self.request.errors.status = 403
             return
         tender.modified = False
-        transfer = generate_id()
-        bid.transfer_token = transfer
-        set_ownership(bid, self.request)
+        acc = set_ownership(bid, self.request)
         tender.bids.append(bid)
         if save_tender(self.request):
             self.LOGGER.info('Created tender bid {}'.format(bid.id),
                         extra=context_unpack(self.request, {'MESSAGE_ID': 'tender_bid_create'}, {'bid_id': bid.id}))
             self.request.response.status = 201
             self.request.response.headers['Location'] = self.request.route_url('Tender Bids', tender_id=tender.id, bid_id=bid['id'])
-            acc = {'token': bid.owner_token}
-            if bid.transfer_token:
-                acc['transfer'] = transfer
             return {'data': bid.serialize('view'), 'access': acc}
 
     @json_view(content_type="application/json", permission='edit_bid', validators=(validate_patch_bid_data,))
