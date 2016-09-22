@@ -1,12 +1,11 @@
 #
-# sorenabell <sorenabell@quintagroup.com>, 2016.
 msgid ""
 msgstr ""
 "Project-Id-Version: openprocurement.tender.openua 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-01-27 13:38+0200\n"
-"PO-Revision-Date: 2016-06-13 13:01+0200\n"
-"Last-Translator: sorenabell <sorenabell@quintagroup.com>\n"
+"PO-Revision-Date: 2016-09-22 13:23+0200\n"
+"Last-Translator: Zoriana Zaiats <sorenabell@quintagroup.com>\n"
 "Language-Team: Ukrainian <support@quintagroup.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -487,5 +486,3 @@ msgstr "Учасник може зареєструвати ставку із с�
 msgid "And activate a bid:"
 msgstr "І активувати ставку:"
 
-#~ msgid "Bidder can register a bid:"
-#~ msgstr "Учасник може зареєструвати цінову пропозицію:"
