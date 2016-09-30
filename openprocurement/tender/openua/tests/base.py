@@ -2,11 +2,13 @@
 import os
 import webtest
 from datetime import datetime, timedelta
+from uuid import uuid4
 from openprocurement.api.models import get_now, SANDBOX_MODE
 from openprocurement.api.tests.base import (test_tender_data as test_tender_data_api,
                                             now,
                                             test_features_tender_data,
                                             BaseTenderWebTest,
+                                            DryRunTenderBaseWebTest,
                                             PrefixedRequestClass)
 
 from openprocurement.api.tests.base import test_bids as base_test_bids
@@ -70,6 +72,13 @@ test_features_tender_ua_data["tenderPeriod"] = {
 test_features_tender_ua_data["items"][0]["deliveryDate"] = test_tender_data["items"][0]["deliveryDate"]
 test_features_tender_ua_data["items"][0]["deliveryAddress"] = test_tender_data["items"][0]["deliveryAddress"]
 # test_features_tender_ua_data["tenderPeriod"] = test_features_tender_ua_data["enquiryPeriod"].copy()
+
+
+test_public_tender_data = test_tender_data.copy()
+test_public_tender_data.update({'id': uuid4().hex, 'status': 'active.tendering', 'tenderID': 'UA-X', 'dateModified': now.isoformat()})
+
+test_public_features_tender_data = test_features_tender_ua_data.copy()
+test_public_features_tender_data.update({'id': uuid4().hex, 'status': 'active.tendering', 'tenderID': 'UA-X', 'dateModified': now.isoformat()})
 
 
 from openprocurement.api.utils import VERSION, apply_data_patch
@@ -265,3 +274,8 @@ class BaseTenderUAContentWebTest(BaseTenderUAWebTest):
     def setUp(self):
         super(BaseTenderUAContentWebTest, self).setUp()
         self.create_tender()
+
+
+class DryRunTenderUABaseWebTest(DryRunTenderBaseWebTest, BaseTenderUAWebTest):
+    initial_data = test_public_tender_data
+    relative_to = os.path.dirname(__file__)

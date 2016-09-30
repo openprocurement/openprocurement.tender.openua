@@ -4,7 +4,7 @@ import unittest
 
 from openprocurement.tender.openua.tests import (
     auction, award, bid, cancellation, chronograph, complaint, contract,
-    document, lot, question, tender)
+    document, dry_run, lot, question, tender)
 
 
 def suite():
@@ -16,6 +16,7 @@ def suite():
     suite.addTest(complaint.suite())
     suite.addTest(contract.suite())
     suite.addTest(document.suite())
+    suite.addTest(dry_run.suite())
     suite.addTest(lot.suite())
     suite.addTest(question.suite())
     suite.addTest(tender.suite())
