@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: openprocurement.tender.openua 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-01-27 13:38+0200\n"
-"PO-Revision-Date: 2016-09-22 13:23+0200\n"
+"PO-Revision-Date: 2016-10-05 10:57+0200\n"
 "Last-Translator: Zoriana Zaiats <sorenabell@quintagroup.com>\n"
 "Language-Team: Ukrainian <support@quintagroup.com>\n"
 "MIME-Version: 1.0\n"
@@ -479,10 +479,11 @@ msgid "Procuring entity can set bid guarantee:"
 msgstr "Замовник може встановити забезпечення тендерної пропозиції:"
 
 #: ../../source/tutorial.rst:179
-msgid "Bidder can register a bid with ``draft`` status:"
-msgstr "Учасник може зареєструвати ставку із статусом ``draft`` (чернетка):"
+msgid "Bidder can register a bid with draft status:"
+msgstr ""
+"Учасник може зареєструвати пропозицію зі статусом ``draft`` (чернетка):"
 
 #: ../../source/tutorial.rst:184
 msgid "And activate a bid:"
-msgstr "І активувати ставку:"
+msgstr "Та активувати пропозицію:"
 
