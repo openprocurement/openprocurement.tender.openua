@@ -486,4 +486,3 @@ msgstr ""
 #: ../../source/tutorial.rst:184
 msgid "And activate a bid:"
 msgstr "Та активувати пропозицію:"
-
