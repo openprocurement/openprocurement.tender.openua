@@ -20,6 +20,37 @@ from openprocurement.api.validation import validate_patch_contract_data
             description="Tender contracts")
 class TenderUaAwardContractResource(TenderAwardContractResource):
 
+    @staticmethod
+    def award_valid(request, awardID, additional=False):
+        tender = request.validated['tender']
+        award = [a for a in tender.awards if a.id == awardID][0]
+        stand_still_end = award.complaintPeriod.endDate
+        if stand_still_end > get_now():
+            error_message = 'Can\'t sign contract before stand-still{additional} period end ({end_date})'.format(
+                additional=" additional awards" if additional else "",
+                end_date=stand_still_end.isoformat())
+            request.errors.add('body', 'data', error_message)
+            request.errors.status = 403
+            return False
+        pending_complaints = [
+            i
+            for i in tender.complaints
+            if i.status in tender.block_complaint_status and i.relatedLot in [None, award.lotID]
+            ]
+        pending_awards_complaints = [
+            i
+            for a in tender.awards
+            for i in a.complaints
+            if i.status in tender.block_complaint_status and a.lotID == award.lotID
+            ]
+        if pending_complaints or pending_awards_complaints:
+            error_message = 'Can\'t sign contract before reviewing all{additional} complaints'.format(
+                additional=" additional" if additional else "")
+            request.errors.add('body', 'data', error_message)
+            request.errors.status = 403
+            return False
+        return True
+
     @json_view(content_type="application/json", permission='edit_tender', validators=(validate_patch_contract_data,))
     def patch(self):
         """Update of contract
@@ -38,6 +69,7 @@ class TenderUaAwardContractResource(TenderAwardContractResource):
             self.request.errors.status = 403
             return
         data = self.request.validated['data']
+        contract = self.request.validated['contract']
 
         if data['value']:
             for ro_attr in ('valueAddedTaxIncluded', 'currency'):
@@ -47,33 +79,23 @@ class TenderUaAwardContractResource(TenderAwardContractResource):
                     return
 
             award = [a for a in tender.awards if a.id == self.request.context.awardID][0]
-            if data['value']['amount'] > award.value.amount:
-                self.request.errors.add('body', 'data', 'Value amount should be less or equal to awarded amount ({})'.format(award.value.amount))
+            max_sum = award.value.amount
+            # If contract has additionalAwardIDs then add value.amount to mac contract value
+            if 'additionalAwardIDs' in contract and contract['additionalAwardIDs']:
+                max_sum += sum([award.value.amount for award in tender.awards
+                                if award['id'] in contract['additionalAwardIDs']])
+            if data['value']['amount'] > max_sum:
+                self.request.errors.add('body', 'data',
+                                        'Value amount should be less or equal to awarded amount ({})'.format(max_sum))
                 self.request.errors.status = 403
                 return
 
         if self.request.context.status != 'active' and 'status' in data and data['status'] == 'active':
-            award = [a for a in tender.awards if a.id == self.request.context.awardID][0]
-            stand_still_end = award.complaintPeriod.endDate
-            if stand_still_end > get_now():
-                self.request.errors.add('body', 'data', 'Can\'t sign contract before stand-still period end ({})'.format(stand_still_end.isoformat()))
-                self.request.errors.status = 403
+            if not self.award_valid(self.request, self.request.context.awardID):  # check main contract
                 return
-            pending_complaints = [
-                i
-                for i in tender.complaints
-                if i.status in tender.block_complaint_status and i.relatedLot in [None, award.lotID]
-            ]
-            pending_awards_complaints = [
-                i
-                for a in tender.awards
-                for i in a.complaints
-                if i.status in tender.block_complaint_status and a.lotID == award.lotID
-            ]
-            if pending_complaints or pending_awards_complaints:
-                self.request.errors.add('body', 'data', 'Can\'t sign contract before reviewing all complaints')
-                self.request.errors.status = 403
-                return
+            for awardID in contract.get('additionalAwardIDs'):
+                if not self.award_valid(self.request, awardID, additional=True):  # if get errors then return them
+                    return
         if check_merged_contracts(self.request) is not None:
             return
         contract_status = self.request.context.status
