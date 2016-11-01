@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from openprocurement.api.models import get_now
 from openprocurement.api.validation import validate_patch_award_data
-from openprocurement.api.views.award import TenderAwardResource
+from openprocurement.api.views.award import TenderAwardResource, set_pending
 from openprocurement.api.utils import (
     apply_patch,
     save_tender,
@@ -123,7 +123,16 @@ class TenderUaAwardResource(TenderAwardResource):
                 award.complaintPeriod.endDate = now
             for i in tender.contracts:
                 if i.awardID == award.id:
+                    if i.status == 'merged':  # Find contract and remove from additionalAwardIDs
+                        main_contract = [c for c in tender.contracts if c['id'] == i.mergedInto][0]
+                        main_contract['additionalAwardIDs'].pop(main_contract['additionalAwardIDs'].index(i.awardID))
+                        del i['mergedInto']
+                    if 'additionalAwardIDs' in i:  # if cancelled contract has additionalAwardIDs
+                        set_pending((contract for contract in tender.contracts
+                                     if contract['awardID'] in i['additionalAwardIDs']))
+                        del i['additionalAwardIDs']  # delete additionalAwardIDs from cancelled contract
                     i.status = 'cancelled'
+                    break
             add_next_award(self.request)
         elif award_status == 'pending' and award.status == 'unsuccessful':
             normalized_end = calculate_normalized_date(get_now(), tender, True)
