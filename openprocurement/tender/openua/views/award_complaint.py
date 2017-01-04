@@ -52,6 +52,10 @@ class TenderUaAwardComplaintResource(TenderAwardComplaintResource):
         if complaint.status == 'claim':
             complaint.dateSubmitted = get_now()
         elif complaint.status == 'pending':
+            if not any([i.status == 'active' for i in tender.awards if i.lotID == self.request.validated['award'].lotID]):
+                self.request.errors.add('body', 'data', 'Complaint submission is allowed only after award activation.')
+                self.request.errors.status = 403
+                return
             complaint.type = 'complaint'
             complaint.dateSubmitted = get_now()
         else:
@@ -99,6 +103,10 @@ class TenderUaAwardComplaintResource(TenderAwardComplaintResource):
             apply_patch(self.request, save=False, src=self.context.serialize())
             self.context.dateSubmitted = get_now()
         elif self.request.authenticated_role == 'complaint_owner' and is_complaintPeriod and self.context.status == 'draft' and data.get('status', self.context.status) == 'pending':
+            if not any([i.status == 'active' for i in tender.awards if i.lotID == self.request.validated['award'].lotID]):
+                self.request.errors.add('body', 'data', 'Complaint submission is allowed only after award activation.')
+                self.request.errors.status = 403
+                return
             apply_patch(self.request, save=False, src=self.context.serialize())
             self.context.type = 'complaint'
             self.context.dateSubmitted = get_now()
