@@ -34,7 +34,7 @@ class TenderUATest(BaseWebTest):
         u.delete_instance(self.db)
 
 
-class BaseTenderUAResourceTest(BaseTenderUAWebTest):
+class BaseTenderUAResourceTest(object):
 
     def test_create_tender_invalid(self):
         request_path = '/tenders'
@@ -671,7 +671,7 @@ class BaseTenderUAResourceTest(BaseTenderUAWebTest):
         tender = response.json['data']
         self.assertEqual(tender['status'], 'active.tendering')
 
-class TenderUAResourceTest(BaseTenderResourceTest, BaseTenderUAWebTest):
+class TenderUAResourceTest(BaseTenderResourceTest, BaseTenderUAWebTest, BaseTenderUAResourceTest):
     test_tender_data = test_tender_data
 
 class BaseTenderUAProcessTest(BaseTenderUAWebTest):
