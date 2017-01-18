@@ -674,7 +674,7 @@ class BaseTenderUAResourceTest(object):
 class TenderUAResourceTest(BaseTenderResourceTest, BaseTenderUAWebTest, BaseTenderUAResourceTest):
     test_tender_data = test_tender_data
 
-class BaseTenderUAProcessTest(BaseTenderUAWebTest):
+class BaseTenderUAProcessTest(object):
 
     def test_invalid_tender_conditions(self):
         self.app.authorization = ('Basic', ('broker', ''))
@@ -907,6 +907,9 @@ class BaseTenderUAProcessTest(BaseTenderUAWebTest):
         self.app.authorization = ('Basic', ('broker', ''))
         response = self.app.get('/tenders/{}'.format(tender_id))
         self.assertEqual(response.json['data']['status'], 'complete')
+
+class TenderUAProcessTest(BaseTenderUAProcessTest,BaseTenderUAWebTest):
+    pass
 
 def suite():
     suite = unittest.TestSuite()
