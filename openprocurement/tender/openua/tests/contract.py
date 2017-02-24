@@ -3,7 +3,7 @@ import unittest
 from datetime import timedelta
 
 from openprocurement.api.models import get_now
-from openprocurement.api.tests.base import test_bids, test_organization
+from openprocurement.api.tests.base import test_bids, test_organization, test_lots
 from openprocurement.tender.openua.tests.base import BaseTenderUAContentWebTest, test_tender_data
 
 
@@ -24,6 +24,16 @@ class TenderContractResourceTest(BaseTenderUAContentWebTest):
         self.award_id = award['id']
         self.app.authorization = authorization
         self.app.patch_json('/tenders/{}/awards/{}?acc_token={}'.format(self.tender_id, self.award_id, self.tender_token), {"data": {"status": "active", "qualified": True, "eligible": True}})
+
+        # Create complaint for award
+        bid_token = self.initial_bids_tokens[self.initial_bids[0]['id']]
+        self.app.post_json(
+            '/tenders/{}/awards/{}/complaints?acc_token={}'.format(self.tender_id, self.award_id, bid_token), {'data': {
+                'title': 'complaint title',
+                'description': 'complaint description',
+                'author': test_organization,
+                'status': 'draft'
+            }})
 
     def test_create_tender_contract_invalid(self):
         self.app.authorization = ('Basic', ('token', ''))
@@ -178,7 +188,21 @@ class TenderContractResourceTest(BaseTenderUAContentWebTest):
         self.assertEqual(response.status, '403 Forbidden')
         self.assertEqual(response.json['errors'][0]["description"], "Value amount should be less or equal to awarded amount (469.0)")
 
+        tender = self.db.get(self.tender_id)
+        tender['awards'][0]['complaints'][0]['status'] = 'accepted'
+        self.db.save(tender)
 
+        response = self.app.patch_json('/tenders/{}/contracts/{}?acc_token={}'.format(
+            self.tender_id, contract['id'], self.tender_token), {"data": {"value": {"valueAddedTaxIncluded": False}}},
+            status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't update contract with accepted complaint")
+
+        tender = self.db.get(self.tender_id)
+        tender['awards'][0]['complaints'][0]['status'] = 'draft'
+        self.db.save(tender)
 
         response = self.app.patch_json('/tenders/{}/contracts/{}?acc_token={}'.format(self.tender_id, contract['id'], self.tender_token), {"data": {"value": {"amount": 238}}})
         self.assertEqual(response.status, '200 OK')
@@ -296,14 +320,16 @@ class TenderContractDocumentResourceTest(BaseTenderUAContentWebTest):
     #initial_data = tender_data
     initial_status = 'active.qualification'
     initial_bids = test_bids
+    initial_lots = test_lots
 
     def setUp(self):
         super(TenderContractDocumentResourceTest, self).setUp()
         # Create award
         auth = self.app.authorization
         self.app.authorization = ('Basic', ('token', ''))
-        response = self.app.post_json('/tenders/{}/awards'.format(
-            self.tender_id), {'data': {'suppliers': [test_organization], 'status': 'pending', 'bid_id': self.initial_bids[0]['id']}})
+        response = self.app.post_json('/tenders/{}/awards'.format(self.tender_id), {'data': {
+            'suppliers': [test_organization], 'status': 'pending', 'bid_id': self.initial_bids[0]['id'],
+            'lotID': self.initial_lots[0]['id']}})
         award = response.json['data']
         self.award_id = award['id']
         response = self.app.patch_json('/tenders/{}/awards/{}'.format(self.tender_id, self.award_id), {"data": {"status": "active", "qualified": True, "eligible": True}})
@@ -312,6 +338,16 @@ class TenderContractDocumentResourceTest(BaseTenderUAContentWebTest):
         contract = response.json['data']
         self.contract_id = contract['id']
         self.app.authorization = auth
+
+        # Create complaint for award
+        bid_token = self.initial_bids_tokens[self.initial_bids[0]['id']]
+        self.app.post_json(
+            '/tenders/{}/awards/{}/complaints?acc_token={}'.format(self.tender_id, self.award_id, bid_token), {'data': {
+                'title': 'complaint title',
+                'description': 'complaint description',
+                'author': test_organization,
+                'status': 'draft'
+            }})
 
     def test_not_found(self):
         response = self.app.post('/tenders/some_id/contracts/some_id/documents', status=404, upload_files=[
@@ -463,7 +499,32 @@ class TenderContractDocumentResourceTest(BaseTenderUAContentWebTest):
         self.assertEqual('name.doc', response.json["data"]["title"])
 
         tender = self.db.get(self.tender_id)
+        tender['awards'][0]['complaints'][0]['status'] = 'accepted'
+        self.db.save(tender)
+
+        response = self.app.post('/tenders/{}/contracts/{}/documents?acc_token={}'.format(
+            self.tender_id, self.contract_id, self.tender_token), upload_files=[('file', 'name.doc', 'content')],
+            status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         'Can\'t add document with accepted complaint')
+
+        tender = self.db.get(self.tender_id)
+        tender['lots'][0]["status"] = "cancelled"
+        self.db.save(tender)
+
+        response = self.app.post('/tenders/{}/contracts/{}/documents?acc_token={}'.format(
+            self.tender_id, self.contract_id, self.tender_token), upload_files=[('file', 'name.doc', 'content')],
+            status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can add document only in active lot status")
+
+        tender = self.db.get(self.tender_id)
         tender['contracts'][-1]["status"] = "cancelled"
+        tender['lots'][0]["status"] = "active"
         self.db.save(tender)
 
         response = self.app.post('/tenders/{}/contracts/{}/documents?acc_token={}'.format(
