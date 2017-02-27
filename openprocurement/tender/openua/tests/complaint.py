@@ -116,9 +116,10 @@ class TenderComplaintResourceTest(BaseTenderUAContentWebTest):
 
         now = datetime.now()
 
+        # set tenderPeriod in past
         tender = self.db.get(self.tender_id)
-        tender['tenderPeriod']['startDate'] = (now - timedelta(13)).isoformat()
-        tender['tenderPeriod']['endDate'] = (now + timedelta(3)).isoformat()
+        tender['tenderPeriod']['startDate'] = (now - timedelta(25)).isoformat()
+        tender['tenderPeriod']['endDate'] = (now - timedelta(10)).isoformat()
         self.db.save(tender)
 
         response = self.app.post_json(request_path, {
@@ -321,9 +322,10 @@ class TenderComplaintResourceTest(BaseTenderUAContentWebTest):
 
         now = datetime.now()
 
+        # set tenderPeriod in past
         tender = self.db.get(self.tender_id)
-        tender['tenderPeriod']['startDate'] = (now - timedelta(13)).isoformat()
-        tender['tenderPeriod']['endDate'] = (now + timedelta(3)).isoformat()
+        tender['tenderPeriod']['startDate'] = (now - timedelta(25)).isoformat()
+        tender['tenderPeriod']['endDate'] = (now - timedelta(10)).isoformat()
         self.db.save(tender)
 
         response = self.app.patch_json(
