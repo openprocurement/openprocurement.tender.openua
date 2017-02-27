@@ -9,6 +9,8 @@ from openprocurement.tender.openua.tests.base import (
 
 from openprocurement.api.tests.base import test_bids, test_organization, now
 from datetime import datetime, timedelta
+from pytz import timezone
+
 
 class TenderBidResourceTest(BaseTenderUAContentWebTest):
     initial_status = 'active.tendering'
@@ -140,6 +142,23 @@ class TenderBidResourceTest(BaseTenderUAContentWebTest):
             {u'description': u"invalid literal for int() with base 10: 'contactPoint'", u'location': u'body', u'name': u'data'},
         ])
 
+        response = self.app.post_json('/tenders/{}/bids'.format(
+            self.tender_id), {'data': {'selfEligible': True, 'selfQualified': True,
+                                       'tenderers': [test_organization], "value": {"amount": 500}, 'status': 'invalid'}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['status'], 'error')
+        self.assertEqual(response.json['errors'][0]['description'], "Bid can be added only with status: ['draft', 'active'].")
+
+        response = self.app.post_json('/tenders/{}/bids'.format(
+            self.tender_id), {'data': {'selfEligible': True, 'selfQualified': True,
+                                       'tenderers': [test_organization], "value": {"amount": 500}, 'status': 'deleted'}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['status'], 'error')
+        self.assertEqual(response.json['errors'][0]['description'],
+                         "Bid can be added only with status: ['draft', 'active'].")
+
     def test_create_tender_bidder(self):
         response = self.app.post_json('/tenders/{}/bids'.format(
             self.tender_id), {'data': {'selfEligible': True, 'selfQualified': True,
@@ -237,6 +256,43 @@ class TenderBidResourceTest(BaseTenderUAContentWebTest):
         self.assertEqual(response.status, '403 Forbidden')
         self.assertEqual(response.content_type, 'application/json')
         self.assertEqual(response.json['errors'][0]["description"], "Can't update bid in current (complete) tender status")
+
+    def test_patch_tender_bidder_invalid(self):
+        response = self.app.post_json('/tenders/{}/bids'.format(
+            self.tender_id), {'data': {'selfEligible': True, 'selfQualified': True, 'status': 'active',
+                                       'tenderers': [test_organization], "value": {"amount": 500}}})
+        self.assertEqual(response.status, '201 Created')
+        self.assertEqual(response.content_type, 'application/json')
+        bid = response.json['data']
+        bid_token = response.json['access']['token']
+
+        response = self.app.patch_json('/tenders/{}/bids/{}?acc_token={}'.format(
+            self.tender_id, bid['id'], bid_token), {"data": {"value": {"amount": 400}, 'status': 'draft'}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't update bid to (draft) status")
+
+        response = self.app.patch_json('/tenders/{}/bids/{}?acc_token={}'.format(
+            self.tender_id, bid['id'], bid_token), {"data": {"value": {"amount": 400}, 'status': 'invalid'}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't update bid to (invalid) status")
+
+        # set tender period in future
+        data = deepcopy(test_tender_data)
+        data["tenderPeriod"]["startDate"] = (now + timedelta(days=1)).isoformat()
+        data["tenderPeriod"]["endDate"] = (now + timedelta(days=17)).isoformat()
+        response = self.app.patch_json('/tenders/{}?acc_token={}'.format(self.tender_id, self.tender_token),
+                                       {'data': {'tenderPeriod': data["tenderPeriod"]}})
+        self.assertEqual(response.status, '200 OK')
+
+        response = self.app.patch_json('/tenders/{}/bids/{}?acc_token={}'.format(
+            self.tender_id, bid['id'], bid_token), {"data": {"value": {"amount": 400}}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertIn('Bid can be updated only during the tendering period:', response.json['errors'][0]["description"])
 
     def test_get_tender_bidder(self):
         response = self.app.post_json('/tenders/{}/bids'.format(
@@ -344,6 +400,29 @@ class TenderBidResourceTest(BaseTenderUAContentWebTest):
         self.assertFalse('value' in bid_data)
         self.assertFalse('tenderers' in bid_data)
         self.assertFalse('date' in bid_data)
+
+    def test_delete_tender_bidder_invalid_period(self):
+        response = self.app.post_json('/tenders/{}/bids'.format(
+            self.tender_id), {'data': {'selfEligible': True, 'selfQualified': True,
+                                       'tenderers': [test_organization], "value": {"amount": 500}}})
+        self.assertEqual(response.status, '201 Created')
+        self.assertEqual(response.content_type, 'application/json')
+        bid = response.json['data']
+        bid_token = response.json['access']['token']
+
+        # set tender period in future
+        data = deepcopy(test_tender_data)
+        data["tenderPeriod"]["startDate"] = (now + timedelta(days=1)).isoformat()
+        data["tenderPeriod"]["endDate"] = (now + timedelta(days=17)).isoformat()
+        response = self.app.patch_json('/tenders/{}?acc_token={}'.format(self.tender_id, self.tender_token),
+                                       {'data': {'tenderPeriod': data["tenderPeriod"]}})
+        self.assertEqual(response.status, '200 OK')
+
+        response = self.app.delete('/tenders/{}/bids/{}?acc_token={}'.format(self.tender_id, bid['id'], bid_token),
+                                   status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertIn('Bid can be deleted only during the tendering period:', response.json['errors'][0]["description"])
 
     def test_deleted_bid_is_not_restorable(self):
         response = self.app.post_json('/tenders/{}/bids'.format(
@@ -737,6 +816,7 @@ class TenderBidDocumentResourceTest(BaseTenderUAContentWebTest):
         bid = response.json['data']
         self.bid_id = bid['id']
         self.bid_token = response.json['access']['token']
+        self.now = datetime.now(timezone('UTC'))
 
     def test_not_found(self):
         response = self.app.post('/tenders/some_id/bids/some_id/documents', status=404, upload_files=[
@@ -861,6 +941,68 @@ class TenderBidDocumentResourceTest(BaseTenderUAContentWebTest):
         self.assertIn(doc_id, response.headers['Location'])
         self.assertEqual('name.doc', response.json["data"]["title"])
         key = response.json["data"]["url"].split('?')[-1].split('=')[-1]
+
+        self.set_status('unsuccessful')
+
+        response = self.app.post('/tenders/{}/bids/{}/documents?acc_token={}'.format(
+            self.tender_id, self.bid_id, self.bid_token), upload_files=[('file', 'name.doc', 'content')], status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't add document in current (unsuccessful) tender status")
+
+        self.set_status('complete')
+
+        response = self.app.post('/tenders/{}/bids/{}/documents?acc_token={}'.format(
+            self.tender_id, self.bid_id, self.bid_token), upload_files=[('file', 'name.doc', 'content')], status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't add document in current (complete) tender status")
+
+        self.set_status('cancelled')
+
+        response = self.app.post('/tenders/{}/bids/{}/documents?acc_token={}'.format(
+            self.tender_id, self.bid_id, self.bid_token), upload_files=[('file', 'name.doc', 'content')], status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't add document in current (cancelled) tender status")
+
+        self.set_status('active.auction')
+
+        response = self.app.post('/tenders/{}/bids/{}/documents?acc_token={}'.format(
+            self.tender_id, self.bid_id, self.bid_token), upload_files=[('file', 'name.doc', 'content')], status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't add document in current (active.auction) tender status")
+
+        self.set_status('active.tendering')
+
+        tender = self.db.get(self.tender_id)
+        tender['tenderPeriod']['startDate'] = (self.now + timedelta(1)).isoformat()
+        tender['tenderPeriod']['endDate'] = (self.now + timedelta(2)).isoformat()
+        self.db.save(tender)
+
+        response = self.app.post('/tenders/{}/bids/{}/documents?acc_token={}'.format(
+            self.tender_id, self.bid_id, self.bid_token), upload_files=[('file', 'name.doc', 'content')], status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         'Document can be added only during the tendering period: from ({}) to ({}).'.format((self.now + timedelta(1)).isoformat(), (self.now + timedelta(2)).isoformat()))
+
+        tender['tenderPeriod']['startDate'] = (self.now - timedelta(2)).isoformat()
+        tender['tenderPeriod']['endDate'] = (self.now - timedelta(1)).isoformat()
+        self.db.save(tender)
+
+        response = self.app.post('/tenders/{}/bids/{}/documents?acc_token={}'.format(
+            self.tender_id, self.bid_id, self.bid_token), upload_files=[('file', 'name.doc', 'content')], status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         'Document can be added only during the tendering period: from ({}) to ({}).'.format(
+                             (self.now - timedelta(2)).isoformat(), (self.now - timedelta(1)).isoformat()))
 
         response = self.app.get('/tenders/{}/bids/{}/documents'.format(self.tender_id, self.bid_id), status=403)
         self.assertEqual(response.status, '403 Forbidden')
@@ -1011,6 +1153,69 @@ class TenderBidDocumentResourceTest(BaseTenderUAContentWebTest):
         self.assertEqual(response.content_type, 'application/json')
         self.assertEqual(response.json['errors'][0]["description"], "Can't update document because award of bid is not in pending or active state")
 
+        self.set_status('unsuccessful')
+
+        response = self.app.put('/tenders/{}/bids/{}/documents/{}?acc_token={}'.format(
+            self.tender_id, self.bid_id, doc_id, self.bid_token), upload_files=[('file', 'name.doc', 'content3')], status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't update document in current (unsuccessful) tender status")
+
+        self.set_status('complete')
+
+        response = self.app.put('/tenders/{}/bids/{}/documents/{}?acc_token={}'.format(
+            self.tender_id, self.bid_id, doc_id, self.bid_token), upload_files=[('file', 'name.doc', 'content3')], status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't update document in current (complete) tender status")
+
+        self.set_status('cancelled')
+
+        response = self.app.put('/tenders/{}/bids/{}/documents/{}?acc_token={}'.format(
+            self.tender_id, self.bid_id, doc_id, self.bid_token), upload_files=[('file', 'name.doc', 'content3')], status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't update document in current (cancelled) tender status")
+
+        self.set_status('active.auction')
+
+        response = self.app.put('/tenders/{}/bids/{}/documents/{}?acc_token={}'.format(
+            self.tender_id, self.bid_id, doc_id, self.bid_token), upload_files=[('file', 'name.doc', 'content3')], status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't update document in current (active.auction) tender status")
+
+        self.set_status('active.tendering')
+
+        tender = self.db.get(self.tender_id)
+        tender['tenderPeriod']['startDate'] = (self.now + timedelta(1)).isoformat()
+        tender['tenderPeriod']['endDate'] = (self.now + timedelta(2)).isoformat()
+        self.db.save(tender)
+
+        response = self.app.put('/tenders/{}/bids/{}/documents/{}?acc_token={}'.format(
+            self.tender_id, self.bid_id, doc_id, self.bid_token), upload_files=[('file', 'name.doc', 'content3')], status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         'Document can be updated only during the tendering period: from ({}) to ({}).'.format(
+                             (self.now + timedelta(1)).isoformat(), (self.now + timedelta(2)).isoformat()))
+
+        tender['tenderPeriod']['startDate'] = (self.now - timedelta(2)).isoformat()
+        tender['tenderPeriod']['endDate'] = (self.now - timedelta(1)).isoformat()
+        self.db.save(tender)
+
+        response = self.app.put('/tenders/{}/bids/{}/documents/{}?acc_token={}'.format(
+            self.tender_id, self.bid_id, doc_id, self.bid_token), upload_files=[('file', 'name.doc', 'content3')], status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         'Document can be updated only during the tendering period: from ({}) to ({}).'.format(
+                             (self.now - timedelta(2)).isoformat(), (self.now - timedelta(1)).isoformat()))
+
     def test_patch_tender_bidder_document(self):
         response = self.app.post('/tenders/{}/bids/{}/documents?acc_token={}'.format(
             self.tender_id, self.bid_id, self.bid_token), upload_files=[('file', 'name.doc', 'content')])
@@ -1059,6 +1264,69 @@ class TenderBidDocumentResourceTest(BaseTenderUAContentWebTest):
         self.assertEqual(response.status, '403 Forbidden')
         self.assertEqual(response.content_type, 'application/json')
         self.assertEqual(response.json['errors'][0]["description"], "Can't update document because award of bid is not in pending or active state")
+
+        self.set_status('unsuccessful')
+
+        response = self.app.patch_json('/tenders/{}/bids/{}/documents/{}?acc_token={}'.format(
+            self.tender_id, self.bid_id, doc_id, self.bid_token), {"data": {"description": "document description"}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't update document in current (unsuccessful) tender status")
+
+        self.set_status('complete')
+
+        response = self.app.patch_json('/tenders/{}/bids/{}/documents/{}?acc_token={}'.format(
+            self.tender_id, self.bid_id, doc_id, self.bid_token), {"data": {"description": "document description"}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't update document in current (complete) tender status")
+
+        self.set_status('cancelled')
+
+        response = self.app.patch_json('/tenders/{}/bids/{}/documents/{}?acc_token={}'.format(
+            self.tender_id, self.bid_id, doc_id, self.bid_token), {"data": {"description": "document description"}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't update document in current (cancelled) tender status")
+
+        self.set_status('active.auction')
+
+        response = self.app.patch_json('/tenders/{}/bids/{}/documents/{}?acc_token={}'.format(
+            self.tender_id, self.bid_id, doc_id, self.bid_token), {"data": {"description": "document description"}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can't update document in current (active.auction) tender status")
+
+        self.set_status('active.tendering')
+
+        tender = self.db.get(self.tender_id)
+        tender['tenderPeriod']['startDate'] = (self.now + timedelta(1)).isoformat()
+        tender['tenderPeriod']['endDate'] = (self.now + timedelta(2)).isoformat()
+        self.db.save(tender)
+
+        response = self.app.patch_json('/tenders/{}/bids/{}/documents/{}?acc_token={}'.format(
+            self.tender_id, self.bid_id, doc_id, self.bid_token), {"data": {"description": "document description"}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         'Document can be updated only during the tendering period: from ({}) to ({}).'.format(
+                             (self.now + timedelta(1)).isoformat(), (self.now + timedelta(2)).isoformat()))
+
+        tender['tenderPeriod']['startDate'] = (self.now - timedelta(2)).isoformat()
+        tender['tenderPeriod']['endDate'] = (self.now - timedelta(1)).isoformat()
+        self.db.save(tender)
+
+        response = self.app.patch_json('/tenders/{}/bids/{}/documents/{}?acc_token={}'.format(
+            self.tender_id, self.bid_id, doc_id, self.bid_token), {"data": {"description": "document description"}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         'Document can be updated only during the tendering period: from ({}) to ({}).'.format(
+                             (self.now - timedelta(2)).isoformat(), (self.now - timedelta(1)).isoformat()))
 
     def test_create_tender_bidder_document_nopending(self):
         response = self.app.post_json('/tenders/{}/bids'.format(

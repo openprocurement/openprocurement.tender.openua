@@ -24,7 +24,7 @@ class TenderUaAwardContractDocumentResource(TenderAwardContractDocumentResource)
             self.request.errors.status = 403
             return
         if any([any([c.status == 'accepted' for c in i.complaints]) for i in self.request.validated['tender'].awards if i.lotID in [a.lotID for a in self.request.validated['tender'].awards if a.id == self.request.validated['contract'].awardID]]):
-            self.request.errors.add('body', 'data', 'Can\'t {} document with accepted complaint')
+            self.request.errors.add('body', 'data', 'Can\'t {} document with accepted complaint'.format(operation))
             self.request.errors.status = 403
             return
         return True

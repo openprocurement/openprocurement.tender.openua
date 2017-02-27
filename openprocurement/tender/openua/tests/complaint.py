@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import unittest
 
+from datetime import datetime, timedelta
+
 from openprocurement.api.tests.base import test_lots, test_organization
 from openprocurement.tender.openua.tests.base import BaseTenderUAContentWebTest, test_tender_data
 
@@ -111,6 +113,31 @@ class TenderComplaintResourceTest(BaseTenderUAContentWebTest):
         self.assertEqual(response.json['errors'], [
             {u'description': [u'relatedLot should be one of lots'], u'location': u'body', u'name': u'relatedLot'}
         ])
+
+        now = datetime.now()
+
+        # set tenderPeriod in past
+        tender = self.db.get(self.tender_id)
+        tender['tenderPeriod']['startDate'] = (now - timedelta(25)).isoformat()
+        tender['tenderPeriod']['endDate'] = (now - timedelta(10)).isoformat()
+        self.db.save(tender)
+
+        response = self.app.post_json(request_path, {
+            'data': {'title': 'complaint title', 'description': 'complaint description', 'author': test_organization, 'status': 'claim'}},
+                                      status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['status'], 'error')
+        self.assertEqual(response.json['errors'][0]["description"], 'Can submit claim not later than 10 days before tenderPeriod end')
+
+        response = self.app.post_json(request_path, {
+            'data': {'title': 'complaint title', 'description': 'complaint description', 'author': test_organization, 'status': 'pending'}},
+                                      status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['status'], 'error')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         'Can submit complaint not later than 4 days before tenderPeriod end')
 
     def test_create_tender_complaint(self):
         response = self.app.post_json('/tenders/{}/complaints'.format(
@@ -290,6 +317,82 @@ class TenderComplaintResourceTest(BaseTenderUAContentWebTest):
         self.assertEqual(response.status, '403 Forbidden')
         self.assertEqual(response.content_type, 'application/json')
         self.assertEqual(response.json['errors'][0]["description"], "Can't update complaint in current (complete) tender status")
+
+        self.set_status('active.tendering')
+
+        now = datetime.now()
+
+        # set tenderPeriod in past
+        tender = self.db.get(self.tender_id)
+        tender['tenderPeriod']['startDate'] = (now - timedelta(25)).isoformat()
+        tender['tenderPeriod']['endDate'] = (now - timedelta(10)).isoformat()
+        self.db.save(tender)
+
+        response = self.app.patch_json(
+            '/tenders/{}/complaints/{}?acc_token={}'.format(self.tender_id, complaint['id'], owner_token), {"data": {
+                "status": "claim"}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['status'], 'error')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         'Can submit claim not later than 10 days before tenderPeriod end')
+
+        response = self.app.patch_json(
+            '/tenders/{}/complaints/{}?acc_token={}'.format(self.tender_id, complaint['id'], owner_token), {"data": {
+                "status": "pending", }}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['status'], 'error')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         'Can submit complaint not later than 4 days before tenderPeriod end')
+
+    def test_patch_tender_complaint_tender_owner(self):
+        response = self.app.post_json('/tenders/{}/complaints?acc_token={}'.format(
+            self.tender_id, self.tender_token),
+            {'data': {'title': 'complaint title', 'description': 'complaint description', 'author': test_organization, "status": "claim",
+                      "cancellationReason": "reason"}})
+        self.assertEqual(response.status, '201 Created')
+        self.assertEqual(response.content_type, 'application/json')
+        complaint = response.json['data']
+
+        response = self.app.patch_json(
+            '/tenders/{}/complaints/{}?acc_token={}'.format(self.tender_id, complaint['id'], self.tender_token),
+            {"data": {
+                "status": "answered",
+                'resolutionType': 'declined',
+                'resolution': 'below20symbols'
+            }}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"], "Can't update complaint: resolution too short")
+
+        # enquiryPeriod can't be patched
+        tender = self.db.get(self.tender_id)
+        tender["enquiryPeriod"]["clarificationsUntil"] = (datetime.now() - timedelta(days=1)).isoformat()
+        self.db.save(tender)
+
+        response = self.app.patch_json(
+            '/tenders/{}/complaints/{}?acc_token={}'.format(self.tender_id, complaint['id'], self.tender_token),
+            {"data": {
+                "status": "answered",
+                'resolutionType': 'declined',
+                'resolution': 'above 20 symbols resolution message'
+            }}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can update claim only before enquiryPeriod.clarificationsUntil")
+
+        response = self.app.patch_json(
+            '/tenders/{}/complaints/{}?acc_token={}'.format(self.tender_id, complaint['id'], self.tender_token),
+            {"data": {
+                "status": "claim",
+                'cancellationReason': 'new reason',
+            }}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"],
+                         "Can update claim only before enquiryPeriod.clarificationsUntil")
 
     def test_review_tender_complaint(self):
         for status in ['invalid', 'satisfied', 'declined']:

@@ -209,6 +209,21 @@ class TenderQuestionResourceTest(BaseTenderUAContentWebTest):
         self.assertEqual(response.json['data']["answer"], "answer")
         self.assertIn('dateAnswered', response.json['data'])
 
+        # enquiryPeriod can't be patched
+        tender = self.db.get(self.tender_id)
+        tender['enquiryPeriod']['clarificationsUntil'] = (datetime.now() - timedelta(1)).isoformat()
+        self.db.save(tender)
+
+        response = self.app.patch_json('/tenders/{}/questions/{}?acc_token={}'.format(
+            self.tender_id, question['id'], self.tender_token), {"data": {"answer": "answer"}}, status=403)
+        self.assertEqual(response.status, '403 Forbidden')
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['errors'][0]["description"], "Can update question only before enquiryPeriod.clarificationsUntil")
+
+        tender = self.db.get(self.tender_id)
+        tender['enquiryPeriod']['clarificationsUntil'] = (datetime.now() + timedelta(1)).isoformat()
+        self.db.save(tender)
+
         self.set_status('active.auction')
 
         response = self.app.patch_json('/tenders/{}/questions/{}?acc_token={}'.format(
