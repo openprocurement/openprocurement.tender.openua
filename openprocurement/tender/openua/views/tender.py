@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 from openprocurement.tender.belowthreshold.views.tender import TenderResource
 from openprocurement.tender.openua.validation import validate_patch_tender_ua_data
+from openprocurement.tender.core.validation import (
+    ViewPermissionValidationError,
+    validate_tender_status_update_in_terminated_status,
+    validate_tender_period_extension
+)
 from openprocurement.tender.openua.utils import (
     check_status,
 )
@@ -12,8 +17,7 @@ from openprocurement.api.utils import (
 from openprocurement.tender.core.utils import (
     save_tender,
     apply_patch,
-    optendersresource,
-    calculate_business_date
+    optendersresource
 )
 from openprocurement.tender.openua.constants import TENDERING_EXTRA_PERIOD
 
@@ -74,30 +78,27 @@ class TenderUAResource(TenderResource):
             }
 
         """
-        tender = self.context
-        if self.request.authenticated_role != 'Administrator' and tender.status in ['complete', 'unsuccessful', 'cancelled']:
-            self.request.errors.add('body', 'data', 'Can\'t update tender in current ({}) status'.format(tender.status))
-            self.request.errors.status = 403
+        try:
+            tender = self.context
+            validate_tender_status_update_in_terminated_status(self.request, tender)
+            data = self.request.validated['data']
+
+            if self.request.authenticated_role == 'tender_owner' and self.request.validated['tender_status'] == 'active.tendering':
+                if 'tenderPeriod' in data and 'endDate' in data['tenderPeriod']:
+                    self.request.validated['tender'].tenderPeriod.import_data(data['tenderPeriod'])
+                    validate_tender_period_extension(self.request, tender, TENDERING_EXTRA_PERIOD)
+                    self.request.validated['tender'].initialize()
+                    self.request.validated['data']["enquiryPeriod"] = self.request.validated['tender'].enquiryPeriod.serialize()
+        except ViewPermissionValidationError:
             return
-        data = self.request.validated['data']
-
-        if self.request.authenticated_role == 'tender_owner' and self.request.validated['tender_status'] == 'active.tendering':
-            if 'tenderPeriod' in data and 'endDate' in data['tenderPeriod']:
-                self.request.validated['tender'].tenderPeriod.import_data(data['tenderPeriod'])
-                if calculate_business_date(get_now(), TENDERING_EXTRA_PERIOD, context=tender) > self.request.validated['tender'].tenderPeriod.endDate:
-                    self.request.errors.add('body', 'data', 'tenderPeriod should be extended by {0.days} days'.format(TENDERING_EXTRA_PERIOD))
-                    self.request.errors.status = 403
-                    return
-                self.request.validated['tender'].initialize()
-                self.request.validated['data']["enquiryPeriod"] = self.request.validated['tender'].enquiryPeriod.serialize()
-
-        apply_patch(self.request, save=False, src=self.request.validated['tender_src'])
-        if self.request.authenticated_role == 'chronograph':
-            check_status(self.request)
-        elif self.request.authenticated_role == 'tender_owner' and tender.status == 'active.tendering':
-            # invalidate bids on tender change
-            tender.invalidate_bids_data()
-        save_tender(self.request)
-        self.LOGGER.info('Updated tender {}'.format(tender.id),
-                    extra=context_unpack(self.request, {'MESSAGE_ID': 'tender_patch'}))
-        return {'data': tender.serialize(tender.status)}
+        else:
+            apply_patch(self.request, save=False, src=self.request.validated['tender_src'])
+            if self.request.authenticated_role == 'chronograph':
+                check_status(self.request)
+            elif self.request.authenticated_role == 'tender_owner' and tender.status == 'active.tendering':
+                # invalidate bids on tender change
+                tender.invalidate_bids_data()
+            save_tender(self.request)
+            self.LOGGER.info('Updated tender {}'.format(tender.id),
+                        extra=context_unpack(self.request, {'MESSAGE_ID': 'tender_patch'}))
+            return {'data': tender.serialize(tender.status)}
