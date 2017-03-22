@@ -2,7 +2,6 @@
 from openprocurement.tender.belowthreshold.views.tender import TenderResource
 from openprocurement.tender.openua.validation import validate_patch_tender_ua_data
 from openprocurement.tender.core.validation import (
-    ViewPermissionValidationError,
     validate_tender_status_update_in_terminated_status,
     validate_tender_period_extension
 )
@@ -14,6 +13,7 @@ from openprocurement.api.utils import (
     context_unpack,
     get_now
 )
+from openprocurement.api.validation import ViewPermissionValidationError
 from openprocurement.tender.core.utils import (
     save_tender,
     apply_patch,

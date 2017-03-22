@@ -8,8 +8,8 @@ from openprocurement.tender.core.utils import (
     optendersresource,
     calculate_business_date
 )
+from openprocurement.api.validation import ViewPermissionValidationError
 from openprocurement.tender.core.validation import (
-    ViewPermissionValidationError,
     validate_operation_with_tender_document_in_not_allowed_status,
     validate_tender_period_extension_in_active_tendering
 )
