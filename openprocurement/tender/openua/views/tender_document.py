@@ -8,6 +8,11 @@ from openprocurement.tender.core.utils import (
     optendersresource,
     calculate_business_date
 )
+from openprocurement.tender.core.validation import (
+    ViewPermissionValidationError,
+    validate_operation_with_tender_document_in_not_allowed_status,
+    validate_tender_period_extension_in_active_tendering
+)
 from openprocurement.api.validation import validate_file_upload, validate_file_update, validate_patch_document_data
 from openprocurement.tender.belowthreshold.views.tender_document import TenderDocumentResource
 from openprocurement.tender.openua.constants import TENDERING_EXTRA_PERIOD
@@ -21,16 +26,13 @@ from openprocurement.tender.openua.constants import TENDERING_EXTRA_PERIOD
 class TenderUaDocumentResource(TenderDocumentResource):
 
     def validate_update_tender(self, operation):
-        if self.request.authenticated_role != 'auction' and self.request.validated['tender_status'] != 'active.tendering' or \
-           self.request.authenticated_role == 'auction' and self.request.validated['tender_status'] not in ['active.auction', 'active.qualification']:
-            self.request.errors.add('body', 'data', 'Can\'t {} document in current ({}) tender status'.format(operation, self.request.validated['tender_status']))
-            self.request.errors.status = 403
+        try:
+            validate_operation_with_tender_document_in_not_allowed_status(self.request, operation)
+            validate_tender_period_extension_in_active_tendering(self.request, TENDERING_EXTRA_PERIOD)
+        except ViewPermissionValidationError:
             return
-        if self.request.validated['tender_status'] == 'active.tendering' and calculate_business_date(get_now(), TENDERING_EXTRA_PERIOD, self.request.validated['tender']) > self.request.validated['tender'].tenderPeriod.endDate:
-            self.request.errors.add('body', 'data', 'tenderPeriod should be extended by {0.days} days'.format(TENDERING_EXTRA_PERIOD))
-            self.request.errors.status = 403
-            return
-        return True
+        else:
+            return True
 
     @json_view(permission='upload_tender_documents', validators=(validate_file_upload,))
     def collection_post(self):
