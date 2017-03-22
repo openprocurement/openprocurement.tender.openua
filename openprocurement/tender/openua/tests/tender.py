@@ -4,6 +4,7 @@ from datetime import timedelta
 from openprocurement.api.models import get_now, SANDBOX_MODE, CPV_ITEMS_CLASS_FROM
 from openprocurement.api import ROUTE_PREFIX
 from openprocurement.api.tests.base import BaseWebTest, test_organization, test_lots
+from openprocurement.tender.openua.tests.base import test_features_tender_ua_data
 from openprocurement.tender.openua.models import Tender
 from openprocurement.tender.openua.tests.base import test_tender_data, BaseTenderUAWebTest
 from copy import deepcopy
@@ -1635,6 +1636,46 @@ class TenderUAProcessTest(BaseTenderUAWebTest):
         response = self.app.get('/tenders/{}'.format(tender_id))
         self.assertEqual(response.json['data']['status'], 'complete')
 
+    def test_lots_features_delete(self):
+        self.app.authorization = ('Basic', ('broker', ''))
+        # create tender
+        response = self.app.post_json('/tenders', {'data': test_features_tender_ua_data})
+        self.assertEqual(response.status, '201 Created')
+        self.assertEqual(response.content_type, 'application/json')
+        tender = response.json['data']
+        tender_id = self.tender_id = response.json['data']['id']
+        owner_token = response.json['access']['token']
+        self.assertEqual(tender['features'], test_features_tender_ua_data['features'])
+        # add lot
+        lots = []
+        for lot in test_lots * 2:
+            response = self.app.post_json('/tenders/{}/lots?acc_token={}'.format(tender_id, owner_token), {'data': lot})
+            self.assertEqual(response.status, '201 Created')
+            self.assertEqual(response.content_type, 'application/json')
+            lots.append(response.json['data']['id'])
+        # create bid
+        response = self.app.post_json('/tenders/{}/bids'.format(tender_id),
+                                      {'data': {'selfEligible': True, 'selfQualified': True,
+                                                'lotValues': [{"value": {"amount": 500}, 'relatedLot': lots[1]}],
+                                                'parameters': [{"code": test_features_tender_ua_data['features'][1]['code'] , "value": 0.1}],
+                                                'tenderers': [test_organization]}})
+        self.assertEqual(response.status, '201 Created')
+        self.assertEqual(response.content_type, 'application/json')
+        bid_id = response.json['data']['id']
+        bid_token = response.json['access']['token']
+        # delete features
+        response = self.app.patch_json('/tenders/{}?acc_token={}'.format(tender['id'], owner_token), {'data': {'features': []}})
+        response = self.app.get('/tenders/{}'.format(tender_id))
+        self.assertNotIn('features', response.json['data'])
+        # patch bid without parameters
+        response = self.app.patch_json('/tenders/{}/bids/{}?acc_token={}'.format(tender_id, bid_id, bid_token),
+                                      {'data': {'selfEligible': True, 'selfQualified': True,
+                                                'status': "active",
+                                                'lotValues': [{"value": {"amount": 500}, 'relatedLot': lots[1]}],
+                                                'parameters': [],
+                                                'tenderers': [test_organization]}})
+        self.assertEqual(response.status, '200 OK')
+        self.assertNotIn('parameters', response.json['data'])
 
 def suite():
     suite = unittest.TestSuite()
