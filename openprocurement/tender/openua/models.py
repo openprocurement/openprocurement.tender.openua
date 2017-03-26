@@ -33,8 +33,9 @@ from openprocurement.api.models import (
     validate_parameters_uniq,
 )
 from openprocurement.api.models import ITender
+from openprocurement.api.utils import calculate_business_date
 from openprocurement.tender.openua.utils import (
-    calculate_business_date, has_unanswered_questions, has_unanswered_complaints
+    has_unanswered_questions, has_unanswered_complaints
 )
 
 edit_role_ua = edit_role + blacklist('enquiryPeriod', 'status')
@@ -499,18 +500,6 @@ class Tender(BaseTender):
             raise ValidationError(u"tenderPeriod.startDate should be in greater than current date")
         if period and calculate_business_date(period.startDate, TENDER_PERIOD, data) > period.endDate:
             raise ValidationError(u"tenderPeriod should be greater than 15 days")
-
-    def initialize(self):
-        endDate = calculate_business_date(self.tenderPeriod.endDate, -ENQUIRY_PERIOD_TIME, self)
-        self.enquiryPeriod = EnquiryPeriod(dict(startDate=self.tenderPeriod.startDate,
-                                                endDate=endDate,
-                                                invalidationDate=self.enquiryPeriod and self.enquiryPeriod.invalidationDate,
-                                                clarificationsUntil=calculate_business_date(endDate, ENQUIRY_STAND_STILL_TIME, self, True)))
-        now = get_now()
-        self.date = now
-        if self.lots:
-            for lot in self.lots:
-                lot.date = now
 
     @serializable(serialized_name="enquiryPeriod", type=ModelType(EnquiryPeriod))
     def tender_enquiryPeriod(self):
