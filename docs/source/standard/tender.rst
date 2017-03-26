@@ -116,10 +116,16 @@ Schema
 :enquiryPeriod:
    :ref:`period`, required
 
-   Period when questions are allowed.
-
    |ocdsDescription|
    The period during which enquiries may be made.
+   
+   Period when questions are allowed.
+   
+   `enquiryPeriod` has additional fields:
+   
+   * ``invalidationDate`` - date of the last tender conditions modification, when all bid proposals became `invalid`. Broker (eMall) should take action in order for bids to be activated or re-submitted.
+   
+   * ``clarificationsUntil`` - time before which answers for questions and claims can be provided. After this time the procedure will be blocked.
 
 :tenderPeriod:
    :ref:`period`, required

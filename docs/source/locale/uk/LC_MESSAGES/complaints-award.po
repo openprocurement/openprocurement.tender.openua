@@ -211,4 +211,3 @@ msgstr "Рішення про задовільнення звернення"
 #: ../../source/complaints-award.rst:103
 msgid "Unsatisfying resolution"
 msgstr "Рішення про відхилення звернення"
-

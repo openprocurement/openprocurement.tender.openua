@@ -49,8 +49,8 @@ TENDER_PERIOD = timedelta(days=15)
 ENQUIRY_PERIOD_TIME = timedelta(days=10)
 TENDERING_EXTRA_PERIOD = timedelta(days=7)
 AUCTION_PERIOD_TIME = timedelta(days=2)
-PERIOD_END_REQUIRED_FROM = datetime(2016, 7, 16, tzinfo=TZ)
-NORMALIZED_COMPLAINT_PERIOD_FROM = datetime(2016, 7, 20, tzinfo=TZ)
+PERIOD_END_REQUIRED_FROM = datetime(2016, 7, 15, tzinfo=TZ)
+NORMALIZED_COMPLAINT_PERIOD_FROM = datetime(2016, 7, 14, tzinfo=TZ)
 
 
 def calculate_normalized_date(dt, tender, ceil=False):
@@ -253,7 +253,7 @@ class Bid(BaseBid):
             'Administrator': Administrator_bid_role,
             'embedded': view_bid_role,
             'view': view_bid_role,
-            'create': whitelist('value', 'tenderers', 'parameters', 'lotValues', 'status', 'selfQualified', 'selfEligible', 'subcontractingDetails'),
+            'create': whitelist('value', 'tenderers', 'parameters', 'lotValues', 'status', 'selfQualified', 'selfEligible', 'subcontractingDetails', 'documents'),
             'edit': whitelist('value', 'tenderers', 'parameters', 'lotValues', 'status', 'subcontractingDetails'),
             'auction_view': whitelist('value', 'lotValues', 'id', 'date', 'parameters', 'participationUrl', 'status'),
             'auction_post': whitelist('value', 'lotValues', 'id', 'date'),
