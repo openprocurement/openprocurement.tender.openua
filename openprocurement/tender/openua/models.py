@@ -220,7 +220,7 @@ class Complaint(BaseComplaint):
             'pending': whitelist('decision', 'status', 'rejectReason', 'rejectReasonDescription'),
             'review': whitelist('decision', 'status', 'reviewDate', 'reviewPlace'),
             'embedded': (blacklist('owner_token', 'owner', 'bid_id') + schematics_embedded_role),
-            'view': (blacklist('owner_token', 'owner', 'bid_id') + schematics_default_role),
+            'view': (blacklist('owner_token', 'transfer_token', 'owner', 'bid_id') + schematics_default_role),
         }
     status = StringType(choices=['draft', 'claim', 'answered', 'pending', 'accepted', 'invalid', 'resolved', 'declined', 'cancelled', 'satisfied', 'stopping', 'stopped', 'mistaken'], default='draft')
     acceptance = BooleanType()
