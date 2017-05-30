@@ -163,6 +163,10 @@ def add_next_award(request, reverse=False):
                 statuses.add('unsuccessful')
                 continue
             unsuccessful_awards = [i.bid_id for i in lot_awards if i.status == 'unsuccessful']
+            try:
+                reverse = request.content_configurator.reverse_auction
+            except AttributeError:
+                reverse = False
             bids = chef(bids, features, unsuccessful_awards, reverse)
             if bids:
                 bid = bids[0]
@@ -192,6 +196,10 @@ def add_next_award(request, reverse=False):
         if not tender.awards or tender.awards[-1].status not in ['pending', 'active']:
             unsuccessful_awards = [i.bid_id for i in tender.awards if i.status == 'unsuccessful']
             active_bids = [bid for bid in tender.bids if bid.status == "active"]
+            try:
+                reverse = request.content_configurator.reverse_auction
+            except AttributeError:
+                reverse = False
             bids = chef(active_bids, tender.features or [], unsuccessful_awards, reverse)
             if bids:
                 bid = bids[0].serialize()
