@@ -1,4 +1,4 @@
-PATCH /api/2.3/tenders/fd9fbaf7245d44b0b8706d5aa48817ab?acc_token=e374c63118b7417ca5a812b0c89b71cc HTTP/1.0
+PATCH /api/2.3/tenders/d5f01806d85143458795cbd133b0e667?acc_token=f945406a1ac44cff8f49754d54f658fa HTTP/1.0
 Authorization: Basic YnJva2VyOg==
 Content-Length: 120
 Content-Type: application/json
@@ -7,7 +7,7 @@ DATA:
 {
   "data": {
     "tenderPeriod": {
-      "endDate": "2016-06-18T15:46:37.526191+03:00"
+      "endDate": "2017-07-02T18:20:56.898103+03:00"
     }, 
     "value": {
       "currency": "UAH", 
@@ -22,120 +22,17 @@ Content-Type: application/json; charset=UTF-8
   "data": {
     "procurementMethod": "open", 
     "complaintPeriod": {
-      "startDate": "2016-05-28T15:46:37.294352+03:00", 
-      "endDate": "2016-06-14T15:46:37.526191+03:00"
+      "startDate": "2017-06-11T18:20:56.722516+03:00", 
+      "endDate": "2017-06-28T00:00:00+03:00"
     }, 
     "enquiryPeriod": {
-      "startDate": "2016-05-28T15:46:37.294352+03:00", 
-      "clarificationsUntil": "2016-06-13T15:46:37.526191+03:00", 
-      "endDate": "2016-06-08T15:46:37.526191+03:00", 
-      "invalidationDate": "2016-06-10T15:46:37.624785+03:00"
+      "startDate": "2017-06-11T18:20:56.722516+03:00", 
+      "clarificationsUntil": "2017-06-27T18:20:56.898103+03:00", 
+      "endDate": "2017-06-22T18:20:56.898103+03:00", 
+      "invalidationDate": "2017-06-24T18:20:57.009175+03:00"
     }, 
     "submissionMethod": "electronicAuction", 
-    "next_check": "2016-06-18T15:46:37.526191+03:00", 
-    "awardCriteria": "lowestCost", 
-    "questions": [
-      {
-        "description": "Просимо додати таблицю потрібної калорійності харчування", 
-        "title": "Калорійність", 
-        "date": "2016-06-10T15:46:36.990524+03:00", 
-        "answer": "Таблицю додано в файлі \"Kalorijnist.xslx\"", 
-        "id": "c61901c6bc9841f09b86256fcdca3bcd", 
-        "questionOf": "tender"
-      }
-    ], 
-    "owner": "broker", 
-    "id": "fd9fbaf7245d44b0b8706d5aa48817ab", 
-    "guarantee": {
-      "currency": "USD", 
-      "amount": 8.0
-    }, 
-    "documents": [
-      {
-        "title": "Notice.pdf", 
-        "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/fd9fbaf7245d44b0b8706d5aa48817ab/documents/6c400e10ade540718f1fa8155e28ad42?download=627854ebbbb745e7940040a5819496b1", 
-        "format": "application/pdf", 
-        "documentOf": "tender", 
-        "datePublished": "2016-06-10T15:46:36.569448+03:00", 
-        "id": "6c400e10ade540718f1fa8155e28ad42", 
-        "dateModified": "2016-06-10T15:46:36.569480+03:00"
-      }, 
-      {
-        "title": "AwardCriteria.pdf", 
-        "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/fd9fbaf7245d44b0b8706d5aa48817ab/documents/fe55dcb656b84b8592af9b73494bd665?download=cf3419d21e74422aa1afbfdb29060545", 
-        "format": "application/pdf", 
-        "documentOf": "tender", 
-        "datePublished": "2016-06-10T15:46:36.713257+03:00", 
-        "id": "fe55dcb656b84b8592af9b73494bd665", 
-        "dateModified": "2016-06-10T15:46:36.713290+03:00"
-      }, 
-      {
-        "title": "AwardCriteria-2.pdf", 
-        "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/fd9fbaf7245d44b0b8706d5aa48817ab/documents/fe55dcb656b84b8592af9b73494bd665?download=0cab672c4cc14af59b173f6c68afc765", 
-        "format": "application/pdf", 
-        "documentOf": "tender", 
-        "datePublished": "2016-06-10T15:46:36.713257+03:00", 
-        "id": "fe55dcb656b84b8592af9b73494bd665", 
-        "dateModified": "2016-06-10T15:46:36.848942+03:00"
-      }
-    ], 
-    "title": "футляри до державних нагород", 
-    "tenderID": "UA-2016-06-10-000001", 
-    "dateModified": "2016-06-10T15:46:37.628956+03:00", 
-    "status": "active.tendering", 
-    "tenderPeriod": {
-      "startDate": "2016-05-28T15:46:37.294352+03:00", 
-      "endDate": "2016-06-18T15:46:37.526191+03:00"
-    }, 
-    "auctionPeriod": {
-      "startDate": "2016-06-12T15:46:37.294352+03:00", 
-      "shouldStartAfter": "2016-06-18T15:46:37.526191+03:00"
-    }, 
-    "procurementMethodType": "aboveThresholdUA", 
-    "minimalStep": {
-      "currency": "UAH", 
-      "amount": 35.0, 
-      "valueAddedTaxIncluded": true
-    }, 
-    "items": [
-      {
-        "description": "Послуги шкільних їдалень", 
-        "classification": {
-          "scheme": "CPV", 
-          "description": "Test", 
-          "id": "37810000-9"
-        }, 
-        "additionalClassifications": [
-          {
-            "scheme": "ДКПП", 
-            "id": "17.21.1", 
-            "description": "Послуги шкільних їдалень"
-          }
-        ], 
-        "deliveryAddress": {
-          "countryName": "Україна", 
-          "postalCode": "79000", 
-          "streetAddress": "вул. Банкова 1", 
-          "region": "м. Київ", 
-          "locality": "м. Київ"
-        }, 
-        "deliveryDate": {
-          "startDate": "2016-06-30T15:46:21.093225+03:00", 
-          "endDate": "2016-07-30T15:46:21.093258+03:00"
-        }, 
-        "id": "679e7db9d7f44ead836426dc89b1db95", 
-        "unit": {
-          "code": "44617100-9", 
-          "name": "item"
-        }, 
-        "quantity": 1
-      }
-    ], 
-    "value": {
-      "currency": "UAH", 
-      "amount": 501.0, 
-      "valueAddedTaxIncluded": true
-    }, 
+    "next_check": "2017-07-02T18:20:56.898103+03:00", 
     "procuringEntity": {
       "contactPoint": {
         "url": "http://sch10.edu.vn.ua/", 
@@ -156,7 +53,115 @@ Content-Type: application/json; charset=UTF-8
         "region": "м. Вінниця", 
         "locality": "м. Вінниця"
       }
-    }
+    }, 
+    "questions": [
+      {
+        "description": "Просимо додати таблицю потрібної калорійності харчування", 
+        "dateAnswered": "2017-06-24T18:20:56.627386+03:00", 
+        "title": "Калорійність", 
+        "date": "2017-06-24T18:20:56.553152+03:00", 
+        "answer": "Таблицю додано в файлі \"Kalorijnist.xslx\"", 
+        "id": "c616c4905e7d481da326b4de16c00df4", 
+        "questionOf": "tender"
+      }
+    ], 
+    "owner": "broker", 
+    "id": "d5f01806d85143458795cbd133b0e667", 
+    "guarantee": {
+      "currency": "USD", 
+      "amount": 8.0
+    }, 
+    "documents": [
+      {
+        "author": "tender_owner", 
+        "title": "Notice.pdf", 
+        "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/d5f01806d85143458795cbd133b0e667/documents/05f740324f484460a3c678e5d81e3753?download=c7e31ec7c94e4b6d975d70a1058c4822", 
+        "format": "application/pdf", 
+        "documentOf": "tender", 
+        "datePublished": "2017-06-24T18:20:56.275293+03:00", 
+        "id": "05f740324f484460a3c678e5d81e3753", 
+        "dateModified": "2017-06-24T18:20:56.275330+03:00"
+      }, 
+      {
+        "author": "tender_owner", 
+        "title": "AwardCriteria.pdf", 
+        "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/d5f01806d85143458795cbd133b0e667/documents/fe214e2fd06d4917a4998f35ef96a2fd?download=04b3c246ca794b67b3d15e721f8639d7", 
+        "format": "application/pdf", 
+        "documentOf": "tender", 
+        "datePublished": "2017-06-24T18:20:56.366320+03:00", 
+        "id": "fe214e2fd06d4917a4998f35ef96a2fd", 
+        "dateModified": "2017-06-24T18:20:56.366360+03:00"
+      }, 
+      {
+        "author": "tender_owner", 
+        "title": "AwardCriteria-2.pdf", 
+        "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/d5f01806d85143458795cbd133b0e667/documents/fe214e2fd06d4917a4998f35ef96a2fd?download=dbe17f675abc44138c25fba3c24c1109", 
+        "format": "application/pdf", 
+        "documentOf": "tender", 
+        "datePublished": "2017-06-24T18:20:56.366320+03:00", 
+        "id": "fe214e2fd06d4917a4998f35ef96a2fd", 
+        "dateModified": "2017-06-24T18:20:56.461758+03:00"
+      }
+    ], 
+    "title": "футляри до державних нагород", 
+    "tenderID": "UA-2017-06-24-000001", 
+    "dateModified": "2017-06-24T18:20:57.013887+03:00", 
+    "status": "active.tendering", 
+    "tenderPeriod": {
+      "startDate": "2017-06-11T18:20:56.722516+03:00", 
+      "endDate": "2017-07-02T18:20:56.898103+03:00"
+    }, 
+    "auctionPeriod": {
+      "startDate": "2017-06-26T18:20:56.722516+03:00", 
+      "shouldStartAfter": "2017-07-03T00:00:00+03:00"
+    }, 
+    "procurementMethodType": "aboveThresholdUA", 
+    "date": "2017-06-24T18:20:55.831226+03:00", 
+    "minimalStep": {
+      "currency": "UAH", 
+      "amount": 35.0, 
+      "valueAddedTaxIncluded": true
+    }, 
+    "items": [
+      {
+        "description": "Послуги шкільних їдалень", 
+        "classification": {
+          "scheme": "ДК021", 
+          "description": "Test", 
+          "id": "37810000-9"
+        }, 
+        "additionalClassifications": [
+          {
+            "scheme": "ДКПП", 
+            "id": "17.21.1", 
+            "description": "Послуги шкільних їдалень"
+          }
+        ], 
+        "deliveryAddress": {
+          "postalCode": "79000", 
+          "countryName": "Україна", 
+          "streetAddress": "вул. Банкова 1", 
+          "region": "м. Київ", 
+          "locality": "м. Київ"
+        }, 
+        "deliveryDate": {
+          "startDate": "2017-07-14T18:20:40.467711+03:00", 
+          "endDate": "2017-08-13T18:20:40.467766+03:00"
+        }, 
+        "id": "bc5e1e48639541f1b57b9678a4085991", 
+        "unit": {
+          "code": "44617100-9", 
+          "name": "item"
+        }, 
+        "quantity": 1
+      }
+    ], 
+    "value": {
+      "currency": "UAH", 
+      "amount": 501.0, 
+      "valueAddedTaxIncluded": true
+    }, 
+    "awardCriteria": "lowestCost"
   }
 }
 

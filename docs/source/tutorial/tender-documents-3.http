@@ -1,4 +1,4 @@
-GET /api/2.3/tenders/fd9fbaf7245d44b0b8706d5aa48817ab/documents HTTP/1.0
+GET /api/2.3/tenders/d5f01806d85143458795cbd133b0e667/documents HTTP/1.0
 Authorization: Basic YnJva2VyOg==
 Host: api-sandbox.openprocurement.org
 
@@ -7,22 +7,24 @@ Content-Type: application/json; charset=UTF-8
 {
   "data": [
     {
+      "author": "tender_owner", 
       "title": "Notice.pdf", 
-      "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/fd9fbaf7245d44b0b8706d5aa48817ab/documents/6c400e10ade540718f1fa8155e28ad42?download=627854ebbbb745e7940040a5819496b1", 
+      "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/d5f01806d85143458795cbd133b0e667/documents/05f740324f484460a3c678e5d81e3753?download=c7e31ec7c94e4b6d975d70a1058c4822", 
       "format": "application/pdf", 
       "documentOf": "tender", 
-      "datePublished": "2016-06-10T15:46:36.569448+03:00", 
-      "id": "6c400e10ade540718f1fa8155e28ad42", 
-      "dateModified": "2016-06-10T15:46:36.569480+03:00"
+      "datePublished": "2017-06-24T18:20:56.275293+03:00", 
+      "id": "05f740324f484460a3c678e5d81e3753", 
+      "dateModified": "2017-06-24T18:20:56.275330+03:00"
     }, 
     {
+      "author": "tender_owner", 
       "title": "AwardCriteria-2.pdf", 
-      "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/fd9fbaf7245d44b0b8706d5aa48817ab/documents/fe55dcb656b84b8592af9b73494bd665?download=0cab672c4cc14af59b173f6c68afc765", 
+      "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/d5f01806d85143458795cbd133b0e667/documents/fe214e2fd06d4917a4998f35ef96a2fd?download=dbe17f675abc44138c25fba3c24c1109", 
       "format": "application/pdf", 
       "documentOf": "tender", 
-      "datePublished": "2016-06-10T15:46:36.713257+03:00", 
-      "id": "fe55dcb656b84b8592af9b73494bd665", 
-      "dateModified": "2016-06-10T15:46:36.848942+03:00"
+      "datePublished": "2017-06-24T18:20:56.366320+03:00", 
+      "id": "fe214e2fd06d4917a4998f35ef96a2fd", 
+      "dateModified": "2017-06-24T18:20:56.461758+03:00"
     }
   ]
 }
