@@ -1,4 +1,4 @@
-GET /api/2.3/tenders/d5f01806d85143458795cbd133b0e667 HTTP/1.0
+GET /api/2.3/tenders/97dd0ca9a0f741a6ad5628c6873d1de9 HTTP/1.0
 Authorization: Basic YnJva2VyOg==
 Host: api-sandbox.openprocurement.org
 
@@ -8,10 +8,10 @@ Content-Type: application/json; charset=UTF-8
   "data": {
     "procurementMethod": "open", 
     "status": "active.tendering", 
-    "tenderID": "UA-2017-06-24-000001", 
+    "awardCriteria": "lowestCost", 
     "tenderPeriod": {
-      "startDate": "2017-06-24T18:20:55.794009+03:00", 
-      "endDate": "2017-07-10T18:20:40.467794+03:00"
+      "startDate": "2017-06-21T15:53:20.003863+03:00", 
+      "endDate": "2017-07-07T15:53:06.068679+03:00"
     }, 
     "title": "футляри до державних нагород", 
     "minimalStep": {
@@ -20,13 +20,13 @@ Content-Type: application/json; charset=UTF-8
       "valueAddedTaxIncluded": true
     }, 
     "enquiryPeriod": {
-      "startDate": "2017-06-24T18:20:55.794009+03:00", 
-      "clarificationsUntil": "2017-07-05T18:20:40.467794+03:00", 
-      "endDate": "2017-06-30T18:20:40.467794+03:00"
+      "startDate": "2017-06-21T15:53:20.003863+03:00", 
+      "clarificationsUntil": "2017-07-03T15:53:06.068679+03:00", 
+      "endDate": "2017-06-27T15:53:06.068679+03:00"
     }, 
     "complaintPeriod": {
-      "startDate": "2017-06-24T18:20:55.794009+03:00", 
-      "endDate": "2017-07-06T00:00:00+03:00"
+      "startDate": "2017-06-21T15:53:20.003863+03:00", 
+      "endDate": "2017-07-03T00:00:00+03:00"
     }, 
     "procurementMethodType": "aboveThresholdUA", 
     "value": {
@@ -35,8 +35,8 @@ Content-Type: application/json; charset=UTF-8
       "valueAddedTaxIncluded": true
     }, 
     "submissionMethod": "electronicAuction", 
-    "date": "2017-06-24T18:20:55.831226+03:00", 
-    "next_check": "2017-07-10T18:20:40.467794+03:00", 
+    "date": "2017-06-21T15:53:20.034093+03:00", 
+    "next_check": "2017-07-07T15:53:06.068679+03:00", 
     "procuringEntity": {
       "contactPoint": {
         "url": "http://sch10.edu.vn.ua/", 
@@ -59,10 +59,10 @@ Content-Type: application/json; charset=UTF-8
       }
     }, 
     "auctionPeriod": {
-      "shouldStartAfter": "2017-07-11T00:00:00+03:00"
+      "shouldStartAfter": "2017-07-08T00:00:00+03:00"
     }, 
     "owner": "broker", 
-    "dateModified": "2017-06-24T18:20:55.837643+03:00", 
+    "dateModified": "2017-06-21T15:53:20.038399+03:00", 
     "items": [
       {
         "description": "Послуги шкільних їдалень", 
@@ -86,10 +86,10 @@ Content-Type: application/json; charset=UTF-8
           "locality": "м. Київ"
         }, 
         "deliveryDate": {
-          "startDate": "2017-07-14T18:20:40.467711+03:00", 
-          "endDate": "2017-08-13T18:20:40.467766+03:00"
+          "startDate": "2017-07-11T15:53:06.068598+03:00", 
+          "endDate": "2017-08-10T15:53:06.068650+03:00"
         }, 
-        "id": "bc5e1e48639541f1b57b9678a4085991", 
+        "id": "fc733ce56c434220bb9e7418b0de6162", 
         "unit": {
           "code": "44617100-9", 
           "name": "item"
@@ -97,8 +97,8 @@ Content-Type: application/json; charset=UTF-8
         "quantity": 1
       }
     ], 
-    "id": "d5f01806d85143458795cbd133b0e667", 
-    "awardCriteria": "lowestCost"
+    "id": "97dd0ca9a0f741a6ad5628c6873d1de9", 
+    "tenderID": "UA-2017-06-21-000001"
   }
 }
 
