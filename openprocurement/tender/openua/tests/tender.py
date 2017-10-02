@@ -33,13 +33,18 @@ from openprocurement.tender.openua.tests.tender_blanks import (
     activate_bid_after_adding_lot,
     first_bid_tender,
     lost_contract_for_active_award,
+    patch_tenderPeriod
 )
 
 
 class TenderUAResourceTestMixin(object):
+
+    tender_period_days = 15
+
     test_empty_listing = snitch(empty_listing)
     test_tender_fields = snitch(tender_fields)
     test_patch_tender_period = snitch(patch_tender_period)
+    test_patch_tenderPeriod = snitch(patch_tenderPeriod)
 
 
 class TenderUaProcessTestMixin(object):
