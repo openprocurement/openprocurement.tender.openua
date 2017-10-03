@@ -565,14 +565,26 @@ def patch_tender_period(self):
     response = self.app.post_json('/tenders', {'data': self.initial_data})
     self.assertEqual(response.status, '201 Created')
     tender = response.json['data']
+    self.tender_id = response.json['data']['id']
     owner_token = response.json['access']['token']
-    dateModified = tender.pop('dateModified')
+
+    response = self.app.patch_json('/tenders/{}?acc_token={}'.format(tender['id'], owner_token),
+                                   {'data': {'tenderPeriod': {'startDate': tender['enquiryPeriod']['endDate']}}},
+                                   status=422
+                                  )
+    self.assertEqual(response.status, '422 Unprocessable Entity')
+    self.assertEqual(response.content_type, 'application/json')
+    self.assertEqual(response.json['errors'][0]['description'], [u'tenderPeriod should be greater than {} days'.format(self.tender_period_days['first'])])
+    self.assertEqual(response.json['errors'][0]['name'], u'tenderPeriod')
+    self.assertEqual(response.json['errors'][0]['location'], u'body')
+
     self.tender_id = tender['id']
     self.go_to_enquiryPeriod_end()
+
     response = self.app.patch_json('/tenders/{}?acc_token={}'.format(tender['id'], owner_token), {'data': {"description": "new description"}}, status=403)
     self.assertEqual(response.status, '403 Forbidden')
     self.assertEqual(response.content_type, 'application/json')
-    self.assertEqual(response.json['errors'][0]["description"], "tenderPeriod should be extended by 7 days")
+    self.assertEqual(response.json['errors'][0]["description"], "tenderPeriod should be extended by {} days".format(self.tender_period_days['second']))
     tenderPeriod_endDate = get_now() + timedelta(days=7, seconds=10)
     enquiryPeriod_endDate = tenderPeriod_endDate - (timedelta(minutes=10) if SANDBOX_MODE else timedelta(days=10))
     response = self.app.patch_json('/tenders/{}?acc_token={}'.format(tender['id'], owner_token), {'data':
@@ -587,26 +599,6 @@ def patch_tender_period(self):
     self.assertEqual(response.content_type, 'application/json')
     self.assertEqual(response.json['data']['tenderPeriod']['endDate'], tenderPeriod_endDate.isoformat())
     self.assertEqual(response.json['data']['enquiryPeriod']['endDate'], enquiryPeriod_endDate.isoformat())
-
-
-def patch_tenderPeriod(self):
-    response = self.app.post_json('/tenders', {'data': self.initial_data})
-    self.assertEqual(response.status, '201 Created')
-    tender = response.json['data']
-    self.tender_id = response.json['data']['id']
-    owner_token = response.json['access']['token']
-
-    response = self.app.patch_json('/tenders/{}?acc_token={}'.format(tender['id'], owner_token),
-                                   {'data': {'tenderPeriod': {'startDate': tender['enquiryPeriod']['endDate']}}},
-                                   status=422
-                                  )
-    self.assertEqual(response.status, '422 Unprocessable Entity')
-    self.assertEqual(response.content_type, 'application/json')
-    self.assertEqual(response.json['errors'][0]['description'], [u'tenderPeriod should be greater than {} days'.format(self.tender_period_days)])
-    self.assertEqual(response.json['errors'][0]['name'], u'tenderPeriod')
-    self.assertEqual(response.json['errors'][0]['location'], u'body')
-
-
 # TenderUAProcessTest
 
 
