@@ -189,6 +189,7 @@ class TenderLotProcessTest(BaseTenderUAContentWebTest, TenderLotProcessTestMixin
     test_lots_features_delete = snitch(lots_features_delete)
     test_proc_2lot_2bid_1claim_1com_1win = snitch(proc_2lot_2bid_1claim_1com_1win)
 
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TenderLotResourceTest))
