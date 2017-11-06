@@ -226,17 +226,6 @@ def create_tender_invalid(self):
          u'name': u'tenderPeriod'}
     ])
 
-    self.initial_data['tenderPeriod']['startDate'] = (get_now() - timedelta(minutes=30)).isoformat()
-    response = self.app.post_json(request_path, {'data': self.initial_data}, status=422)
-    del self.initial_data['tenderPeriod']['startDate']
-    self.assertEqual(response.status, '422 Unprocessable Entity')
-    self.assertEqual(response.content_type, 'application/json')
-    self.assertEqual(response.json['status'], 'error')
-    self.assertEqual(response.json['errors'], [
-        {u'description': [u'tenderPeriod.startDate should be in greater than current date'], u'location': u'body',
-         u'name': u'tenderPeriod'}
-    ])
-
     now = get_now()
     self.initial_data['awardPeriod'] = {'startDate': now.isoformat(), 'endDate': now.isoformat()}
     response = self.app.post_json(request_path, {'data': self.initial_data}, status=422)
@@ -373,6 +362,35 @@ def create_tender_invalid(self):
     self.assertEqual(response.json['errors'], [
         {u'description': [{u'deliveryDate': {u'endDate': [u'This field is required.']}}], u'location': u'body',
          u'name': u'items'}
+    ])
+
+
+def create_tender_invalid_tenderPeriod(self):
+    request_path = '/tenders'
+
+    data = deepcopy(self.initial_data)
+    data['tenderPeriod']['startDate'] = (get_now() - timedelta(minutes=30)).isoformat()
+    response = self.app.post_json(request_path, {'data': data}, status=422)
+    self.assertEqual(response.status, '422 Unprocessable Entity')
+    self.assertEqual(response.content_type, 'application/json')
+    self.assertEqual(response.json['status'], 'error')
+    self.assertEqual(response.json['errors'], [
+        {u'description': [u'tenderPeriod.startDate should be in greater than current date'], u'location': u'body',
+         u'name': u'tenderPeriod'}
+    ])
+
+    data = deepcopy(self.initial_data)
+    data['tenderPeriod']['endDate'] = (get_now() + timedelta(days=self.tendering_days - 1)).isoformat()
+    # to pass SANDBOX_MODE = True
+    if 'procurementMethodDetails' in data:
+        del data['procurementMethodDetails']
+    response = self.app.post_json(request_path, {'data': data}, status=422)
+    self.assertEqual(response.status, '422 Unprocessable Entity')
+    self.assertEqual(response.content_type, 'application/json')
+    self.assertEqual(response.json['status'], 'error')
+    self.assertEqual(response.json['errors'], [
+        {u'description': [u"tenderPeriod should be greater than {} days".format(self.tendering_days)],
+         u'location': u'body', u'name': u'tenderPeriod'}
     ])
 
 

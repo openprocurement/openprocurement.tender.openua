@@ -13,6 +13,7 @@ from openprocurement.tender.belowthreshold.tests.tender_blanks import (
     invalid_tender_conditions,
 )
 
+from openprocurement.tender.openua.constants import TENDER_PERIOD
 from openprocurement.tender.openua.tests.base import test_tender_data, BaseTenderUAWebTest
 from openprocurement.tender.openua.tests.tender_blanks import (
     # Tender UA Test
@@ -21,6 +22,7 @@ from openprocurement.tender.openua.tests.tender_blanks import (
     empty_listing,
     patch_draft_invalid_json,
     create_tender_invalid,
+    create_tender_invalid_tenderPeriod,
     create_tender_generated,
     tender_fields,
     patch_tender,
@@ -56,8 +58,10 @@ class TenderUATest(BaseWebTest):
 
 class TenderUAResourceTest(BaseTenderUAWebTest, TenderResourceTestMixin, TenderUAResourceTestMixin):
     initial_data = test_tender_data
+    tendering_days = TENDER_PERIOD.days
 
     test_create_tender_invalid = snitch(create_tender_invalid)
+    test_create_tender_invalid_tenderPeriod = snitch(create_tender_invalid_tenderPeriod)
     test_create_tender_generated = snitch(create_tender_generated)
     test_patch_draft_invalid_json = snitch(patch_draft_invalid_json)
     test_patch_tender = snitch(patch_tender)
