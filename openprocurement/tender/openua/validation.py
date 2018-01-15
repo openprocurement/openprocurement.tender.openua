@@ -65,3 +65,20 @@ def validate_contract_update_with_accepted_complaint(request):
     tender = request.validated['tender']
     if any([any([c.status == 'accepted' for c in i.complaints]) for i in tender.awards if i.lotID in [a.lotID for a in tender.awards if a.id == request.context.awardID]]):
         raise_operation_error(request, 'Can\'t update contract with accepted complaint')
+
+# cancellation
+def validate_cancellation(request):
+    tender = request.validated['tender']
+    cancellation = request.validated['cancellation']
+    if not cancellation.relatedLot and tender.lots:
+        active_lots = [i.id for i in tender.lots if i.status == 'active']
+        statuses = [set([i.status for i in tender.awards if i.lotID == lot_id]) for lot_id in active_lots]
+        block_cancellation = any([not i.difference({'unsuccessful', 'cancelled'}) if i else False for i in statuses])
+    elif cancellation.relatedLot and tender.lots or not cancellation.relatedLot and not tender.lots:
+        statuses = set([i.status for i in tender.awards if i.lotID == cancellation.relatedLot])
+        block_cancellation = not statuses.difference({'unsuccessful', 'cancelled'}) if statuses else False
+    else:
+        block_cancellation = False
+    if block_cancellation:
+        raise_operation_error(request, 'Can\'t {} cancellation if all awards is unsuccessful'.format(
+            OPERATIONS.get(request.method)))
