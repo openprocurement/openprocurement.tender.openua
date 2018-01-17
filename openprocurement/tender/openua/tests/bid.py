@@ -6,13 +6,10 @@ from openprocurement.api.tests.base import snitch
 from openprocurement.tender.belowthreshold.tests.base import (
     test_organization,
 )
+from openprocurement.tender.belowthreshold.tests.bid import TenderBidBatchDocumentWithDSResourceTestMixin
 from openprocurement.tender.belowthreshold.tests.bid_blanks import (
     # TenderBidDocumentResourceTest
     not_found,
-    # TenderBidderBatchDocumentWithDSResourceTest
-    create_tender_bid_with_documents,
-    create_tender_bid_with_document_invalid,
-    create_tender_bid_with_document,
 )
 
 from openprocurement.tender.openua.tests.base import (
@@ -112,7 +109,8 @@ class TenderBidDocumentWithDSResourceTest(TenderBidDocumentResourceTest):
 
 
 
-class TenderBidderBatchDocumentWithDSResourceTest(BaseTenderUAContentWebTest):
+class TenderBidderBatchDocumentWithDSResourceTest(BaseTenderUAContentWebTest,
+                                                  TenderBidBatchDocumentWithDSResourceTestMixin):
     docservice = True
     initial_status = 'active.tendering'
 
@@ -122,10 +120,6 @@ class TenderBidderBatchDocumentWithDSResourceTest(BaseTenderUAContentWebTest):
                         'selfQualified': True,
                         'documents': []
         }
-
-    create_tender_bid_with_document_invalid = snitch(create_tender_bid_with_document_invalid)
-    create_tender_bid_with_document = snitch(create_tender_bid_with_document)
-    create_tender_bid_with_documents = snitch(create_tender_bid_with_documents)
 
 
 def suite():
