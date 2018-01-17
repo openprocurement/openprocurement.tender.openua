@@ -37,6 +37,9 @@ from openprocurement.tender.openua.tests.tender_blanks import (
 
 
 class TenderUAResourceTestMixin(object):
+
+    tender_period_days = {'first': 15, 'second': 7}
+
     test_empty_listing = snitch(empty_listing)
     test_tender_fields = snitch(tender_fields)
     test_patch_tender_period = snitch(patch_tender_period)
