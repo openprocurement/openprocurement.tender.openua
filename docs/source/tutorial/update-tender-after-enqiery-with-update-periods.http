@@ -73,6 +73,7 @@ Content-Type: application/json; charset=UTF-8
     }, 
     "documents": [
       {
+        "author": "tender_owner", 
         "title": "Notice.pdf", 
         "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/97dd0ca9a0f741a6ad5628c6873d1de9/documents/834ae499148f4eb7996d8db7dcd8fd14?download=6f58464f57364eff809716a21346d568", 
         "format": "application/pdf", 
@@ -82,6 +83,7 @@ Content-Type: application/json; charset=UTF-8
         "dateModified": "2017-06-21T15:53:20.439925+03:00"
       }, 
       {
+        "author": "tender_owner", 
         "title": "AwardCriteria.pdf", 
         "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/97dd0ca9a0f741a6ad5628c6873d1de9/documents/8eb8c964d53342919cf982b74ce28eee?download=1b5689bd04d94e68813052edcc6e9eaa", 
         "format": "application/pdf", 
@@ -91,6 +93,7 @@ Content-Type: application/json; charset=UTF-8
         "dateModified": "2017-06-21T15:53:20.531494+03:00"
       }, 
       {
+        "author": "tender_owner", 
         "title": "AwardCriteria-2.pdf", 
         "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/97dd0ca9a0f741a6ad5628c6873d1de9/documents/8eb8c964d53342919cf982b74ce28eee?download=70093c4ab022423eb1acf14a6a34ca4b", 
         "format": "application/pdf", 

@@ -9,6 +9,7 @@ Content-Type: application/json; charset=UTF-8
 Location: http://api-sandbox.openprocurement.org/api/2.3/tenders/97dd0ca9a0f741a6ad5628c6873d1de9/documents/8eb8c964d53342919cf982b74ce28eee
 {
   "data": {
+    "author": "tender_owner", 
     "title": "AwardCriteria.pdf", 
     "url": "http://api-sandbox.openprocurement.org/api/2.3/tenders/97dd0ca9a0f741a6ad5628c6873d1de9/documents/8eb8c964d53342919cf982b74ce28eee?download=1b5689bd04d94e68813052edcc6e9eaa", 
     "format": "application/pdf", 
